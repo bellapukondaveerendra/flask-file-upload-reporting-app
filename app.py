@@ -21,10 +21,11 @@ def intro():
 @app.route('/index',methods = ['GET','POST'])
 def index():
     if request.method == 'POST':
-        
+        i = 1
         for f in request.files.getlist('file_name'):
             #f=request.files['file_name']
-            f.save(os.path.join(app.config['UPLOAD_PATH'],f.filename))
+            f.save(os.path.join(app.config['UPLOAD_PATH'],'file'+str(i)))
+            i=i+1
         return render_template('index.html',msg = "File Uploaded successfully")
     return render_template('index.html',msg="Choose files to upload")
 
@@ -39,14 +40,16 @@ def report():
     pd.set_option('display.precision', 3)
 
 
-    df1 = pd.read_csv('file1.csv')
-    df2 = pd.read_csv('file2.csv')
+    df1 = pd.read_csv('file1')
+    df2 = pd.read_csv('file2')
     
     list_of_column_names = list(df1.columns)
     redshift = len(df1)
     mongodb = len(df2)
 
-    null_count = df1.isna().sum()
+    null_count1 = df1.isna().sum()
+    null_count2 = df2.isna().sum()
+
     result1 = df1[~df1.apply(tuple,1).isin(df2.apply(tuple,1))]
     file = open(r"templates/table.html","r+")
     file.truncate(0)
@@ -56,7 +59,7 @@ def report():
         text_file = open(r"templates/table.html", "a")
         text_file.write(result)
         text_file.close()
-    return render_template('report.html',redshift = redshift , mongodb = mongodb , null_count = null_count)
+    return render_template('report.html',redshift = redshift , mongodb = mongodb , null_count1 = null_count1 , null_count2 = null_count2)
 
 
 @app.route('/table')
